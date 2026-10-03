@@ -1,0 +1,52 @@
+# Arm C: score -> frame-level control curves by flow matching, with NO intermediate per-note
+# representation. This is the baseline the per-note parameterised arm (A) has to beat, and it
+# exists to answer one question -- whether a per-note intermediate is necessary at all.
+#
+# Backbone is model/synth/joint_synth.py's JointSynthDecoder, deliberately at the SAME d_model/depth
+# as config/ctrl-lfm-guitarset-joint-pe.yaml so that if C wins it is not a capacity confound.
+# Only latent_dim differs: 2 control channels instead of 64 audio-latent dims.
+#
+# Run as: python -m scripts.perf.train_perf_predictor --name pe_note_shape \
+#   --out-root runs/perf --targets pitch,envelope --note-shape-ratio 1
+name: ctrl-flow-guitarset
+
+data:
+  type: GuitarSet
+  latent: stable-audio-open-1.0
+
+latent:
+  model_id: stabilityai/stable-audio-open-1.0
+
+cache:
+  root: cache
+
+model:
+  latent_dim: 2          # (pitch_midi, envelope), both z-scored
+  joint:
+    output_mode: per_string
+    n_strings: 6
+
+control:
+  signals:
+    - name: pitch
+    - name: envelope
+    - name: onset
+    - name: voiced
+
+dataset:
+  # conditioning is built inside ControlFlowDataset from the score, not read from here;
+  # this list only gates which cached signals a string must have to be indexed at all
+  control_signals: [pitch, envelope]
+  # The shape experiment gives every MIDI note equal weight over its annotated extent plus
+  # two boundary frames, so attacks/releases immediately outside the annotation are included.
+  note_shape_padding_frames: 2
+  split:
+    entries:
+      - dataset: GuitarSet
+        splitter: guitarset_ddsp
+
+trainer:
+  epochs: 500
+
+saver:
+  output_dir: runs/perf

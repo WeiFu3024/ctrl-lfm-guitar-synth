@@ -1,0 +1,17 @@
+torch
+torchaudio
+einops
+stable-audio-tools
+huggingface_hub
+omegaconf
+zarr<3  # zarr 3 requires Python >=3.11; this project targets 3.10 (stable-audio-tools constraint)
+numpy
+torchcrepe
+tqdm
+soundfile
+matplotlib
+scipy
+pretty_midi
+mido
+PyGuitarPro
+music21

@@ -1,0 +1,44 @@
+# Architecture-matched six-string single-stage baseline for the full peak-gain experiment.
+# The only conditioning is flat per-note MIDI pitch plus DDSP-Guitar-style peak
+# pseudo-velocity; no predicted expressive control curves are used.
+#
+# Run as: python -m scripts.synth.train_joint_synth --config config/synth-velocity-baseline.yaml
+name: ctrl-lfm-joint-velocity-peak
+
+data:
+  type: GuitarSet
+  latent: stable-audio-open-1.0
+
+latent:
+  model_id: stabilityai/stable-audio-open-1.0
+
+cache:
+  root: cache
+
+model:
+  latent_dim: 64
+  joint:
+    output_mode: per_string
+    n_strings: 6
+
+control:
+  signals:
+    - name: pitch
+    - name: envelope
+    - name: onset
+    - name: voiced
+
+dataset:
+  control_signals: [midi_pitch, pseudo_velocity]
+  joint_dataset_cls: JointVelocitySynthDataset
+  velocity_gain_mode: max
+  split:
+    entries:
+      - dataset: GuitarSet
+        splitter: guitarset_ddsp
+
+trainer:
+  epochs: 500
+
+saver:
+  output_dir: runs/synth-velocity-baseline

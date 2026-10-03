@@ -1,0 +1,53 @@
+# config/ctrl-lfm-guitarset-joint-peov.yaml with ONLY model.joint.event_channels added --
+# onset and voiced are still cached and fed exactly as before, but instead of being
+# concatenated through control_proj alongside pitch/envelope (peov's plain-concat scheme),
+# each is now an ADDITIVE learned embedding: at a frame where the raw flag is 1, that
+# channel's own nn.Parameter(embed) vector is added to the conditioning; at 0, nothing is
+# added. See model/synth/joint_synth.py's JointSynthConfig.event_channels docstring for the
+# rationale (a binary event is a categorical fact, not a continuous quantity a single shared
+# linear layer should scale).
+#
+# Isolates the ENCODING SCHEME for onset/voiced, not their presence -- the comparison point
+# is ctrl-lfm-guitarset-joint-peov (plain concat), not ctrl-lfm-guitarset-joint-pe (no
+# onset/voiced at all).
+#
+# Run as: python -m scripts.synth.train_joint_synth --config config/synth.yaml
+name: ctrl-lfm-joint-peov-embed
+
+data:
+  type: GuitarSet
+  latent: stable-audio-open-1.0
+
+latent:
+  model_id: stabilityai/stable-audio-open-1.0
+
+cache:
+  root: cache
+
+model:
+  latent_dim: 64
+  joint:
+    output_mode: per_string
+    n_strings: 6
+    event_channels: [onset, voiced]
+
+control:
+  signals:
+    - name: pitch
+    - name: envelope
+    - name: onset
+    - name: voiced
+    - name: ddsp_controls
+
+dataset:
+  control_signals: [pitch, envelope, onset, voiced]
+  split:
+    entries:
+      - dataset: GuitarSet
+        splitter: guitarset_ddsp
+
+trainer:
+  epochs: 500
+
+saver:
+  output_dir: runs/synth
