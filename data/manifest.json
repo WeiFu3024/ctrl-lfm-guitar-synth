@@ -109,25 +109,25 @@
   "long_samples": [
     {
       "id": "004_JSswc_guitar_standard",
-      "label": "GAPS 004_JSswc \u2014 Guitar Standard",
+      "label": "GAPS 004_JSswc",
       "duration_s": 99.7,
       "source_gp": "data/GAPS/musicxml/004_JSswc.xml"
     },
     {
       "id": "008_PSswc_nylon_stringed_guitar",
-      "label": "GAPS 008_PSswc \u2014 Nylon Stringed Guitar",
+      "label": "GAPS 008_PSswc",
       "duration_s": 63.0,
       "source_gp": "data/GAPS/musicxml/008_PSswc.xml"
     },
     {
       "id": "009_xSswc_nylon_guitar",
-      "label": "GAPS 009_xSswc \u2014 Nylon Guitar",
+      "label": "GAPS 009_xSswc",
       "duration_s": 108.0,
       "source_gp": "data/GAPS/musicxml/009_xSswc.xml"
     },
     {
       "id": "010_QSswc_nylon_guitar",
-      "label": "GAPS 010_QSswc \u2014 Nylon Guitar",
+      "label": "GAPS 010_QSswc",
       "duration_s": 184.5,
       "source_gp": "data/GAPS/musicxml/010_QSswc.xml"
     }
