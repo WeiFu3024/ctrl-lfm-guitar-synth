@@ -34,23 +34,38 @@
 # frames predicted via two different window calls: 8.8 cents when they fell late inside a
 # window that started at frame 0, 89.0 cents when the identical frames fell early inside a
 # window that started mid-song). The fix that closed nearly all of that gap: prepending
-# 0.5s of SILENCE to every non-initial window's conditioning. GuitarSet recordings
-# virtually always open with a brief silence before the first note, and this predictor's
-# own validation loop (ControlFlowDataset._pick_window with deterministic=True) always
-# evaluates crops starting at frame 0 of a recording -- so "silence immediately followed by
-# real content" is the ONLY start-of-sequence shape this checkpoint's selected epoch was
-# ever actually measured against. A window starting abruptly mid-phrase, with no such lead-
-# in, sits in a regime nothing ever validated -- and the model's BIDIRECTIONAL attention
-# (no causal mask) lets that unfamiliar opening drag down the whole window's prediction,
-# not just its first few frames (measured: with the silence prefix, error was uniformly
-# low across the entire window, 8-14 cents throughout, not just near the front).
+# 0.5s of SILENCE to every window's conditioning, INCLUDING THE FIRST. GuitarSet
+# recordings (this predictor's training distribution) virtually always open with a brief
+# silence before the first note, and this predictor's own validation loop
+# (ControlFlowDataset._pick_window with deterministic=True) always evaluates crops
+# starting at frame 0 of a recording -- so "silence immediately followed by real content"
+# is the ONLY start-of-sequence shape this checkpoint's selected epoch was ever actually
+# measured against. A window starting abruptly mid-phrase, with no such lead-in, sits in
+# a regime nothing ever validated -- and the model's BIDIRECTIONAL attention (no causal
+# mask) lets that unfamiliar opening drag down the whole window's prediction, not just
+# its first few frames (measured: with the silence prefix, error was uniformly low across
+# the entire window, 8-14 cents throughout, not just near the front).
+#
+# An earlier version of this fix only prefixed NON-INITIAL chunks, on the assumption that
+# the first chunk -- covering a real recording's own frame 0 -- already had that lead-in
+# silence by construction, same as training. That assumption does not hold for arbitrary
+# score input: a GuitarPro/MIDI/MusicXML piece can place its first note at offset 0 with
+# no lead-in at all, and the first chunk can still be several hundred frames (its budget
+# is the same WINDOW_FRAMES as every other chunk) -- not a negligible edge case. Measured
+# on a 23s/489-frame synthetic strummed-chord test case with 5 of 6 strings already
+# sounding at frame 0: the un-prefixed first chunk alone (its first ~11.7s) carried
+# 52-119 cents median pitch error on the two most densely re-triggered strings,
+# collapsing to 10-18 cents in the very next (padded) chunk on the SAME strings with
+# comparable note density -- the identical fix, just needed unconditionally rather than
+# only on non-initial chunks.
 #
 # predict_curves_chunked implements that fix as a real windowing scheme instead of a
 # one-off patch: cut only at NOTE BOUNDARIES (never mid-sustain, on any string) so a chunk
 # never contains a truncated note; carry the last ~1s of already-finalised notes forward as
-# CONTEXT into the next chunk (so the model isn't reasoning from zero musical memory); and
-# prefix every non-initial chunk with 0.5s of silence so it presents the same "recording
-# start" shape the checkpoint was actually validated on. Each chunk's context+pad prefix is
+# CONTEXT into the next chunk (so the model isn't reasoning from zero musical memory) --
+# empty for the first chunk, which has no prior content to carry; and prefix every chunk,
+# including the first, with 0.5s of silence so it presents the same "recording start"
+# shape the checkpoint was actually validated on. Each chunk's context+pad prefix is
 # re-predicted for the model's benefit but discarded from the stitched output -- only a
 # chunk's own new content is kept, concatenated directly (no overlap-add needed, since
 # chunks no longer overlap in what they contribute).
@@ -347,12 +362,13 @@ def predict_curves_chunked(perf_model: EnvelopeRegressor, cond: Dict[str, np.nda
                             pad_s: float = PAD_S, context_s: float = CONTEXT_S):
     """Note-boundary chunked inference (see module docstring for why -- a sliding hop
     window like the synth's gave a measured 3-14x raw quality gap between chunks that
-    start at frame 0 and chunks that don't). Each non-initial chunk is built as
-    [pad_frames of silence] + [up to context_s of already-finalised note context] +
-    [new content, up to max_frame total] -- cut only at _note_boundaries positions, so no
-    note is ever split mid-sustain on any string, on either edge. Only the new-content
-    portion of each chunk's output is kept; chunks are concatenated directly (no
-    overlap-add), since they no longer overlap in what they contribute."""
+    start with a silence lead-in and chunks that don't). Every chunk, including the
+    first, is built as [pad_frames of silence] + [up to context_s of already-finalised
+    note context, empty for the first chunk] + [new content, up to max_frame total] --
+    cut only at _note_boundaries positions, so no note is ever split mid-sustain on any
+    string, on either edge. Only the new-content portion of each chunk's output is kept;
+    chunks are concatenated directly (no overlap-add), since they no longer overlap in
+    what they contribute."""
     active = cond["voiced"][:, :, 0] > 0.5
     boundaries = _note_boundaries(active)
     pad_frames = int(round(pad_s * fr))
@@ -378,10 +394,10 @@ def predict_curves_chunked(perf_model: EnvelopeRegressor, cond: Dict[str, np.nda
     cursor = 0
     first = True
     while cursor < T:
+        pad = pad_frames
         if first:
-            pad, context_start = 0, cursor
+            context_start = cursor
         else:
-            pad = pad_frames
             context_start = smallest_geq(max(0, cursor - context_budget), cursor)
             if context_start is None:
                 context_start = cursor          # no safe boundary in the lookback -> no context
