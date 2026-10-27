@@ -128,6 +128,8 @@ scripts/      training and cache-building CLI entry points
 inference/    the full score -> audio CLI (GuitarPro / MusicXML / MIDI parsers + pipeline)
 examples/     four MIT-licensed GAPS demo pieces (MusicXML) for the quickstart
 checkpoints/  pretrained weights (gitignored -- see CHECKPOINTS.md / download_checkpoints.py)
+docs/         GitHub Pages listening demo (static HTML/CSS/JS, see docs/README.md) --
+              https://weifu3024.github.io/ctrl-lfm-guitar-synth/
 ```
 
 ## License

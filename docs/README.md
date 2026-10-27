@@ -1,10 +1,11 @@
 # guitar-synth listening demo
 
 Static GitHub Pages site (no build step — plain HTML/CSS/JS, like this project's other
-browser gadgets `tools/audio_control_viewer` and `tools/score_inference_demo`). This is
-a **separate git repository from `guitar-synth`** on purpose — the main repo's
-`CLAUDE.md` forbids committing audio/plots, and this site is nothing but audio, MIDI, and
-plotted curves. `guitar-synth/.gitignore` excludes this whole directory.
+browser gadgets `tools/audio_control_viewer` and `tools/score_inference_demo` in the
+`guitar-synth` dev repo). Lives at `docs/` in this repo's root so GitHub Pages can serve
+it via "Deploy from a branch: master, /docs" without a build step; the rest of the repo
+(`config/`, `model/`, `dataset/`, `scripts/`, `inference/`, ...) is the training +
+inference code the top-level `README.md` documents.
 
 ## What it shows
 
@@ -32,13 +33,13 @@ sounding.
 ## Regenerating `data/`
 
 `data/` (audio mp3s, per-string MIDI-note JSON, per-string control-curve JSON, and
-`manifest.json`) is generated entirely by the main repo's
+`manifest.json`) is generated entirely by the `guitar-synth` dev repo's
 `scripts/pipeline/export_demo_assets.py` — nothing in this repo computes it. From
 `guitar-synth/`:
 
 ```bash
-conda activate guitar-synth   # needs mido + this repo's dataset/control cache access
-python -m scripts.pipeline.export_demo_assets --out demo_site/data
+conda activate guitar-synth   # needs mido + that repo's dataset/control cache access
+python -m scripts.pipeline.export_demo_assets --out demo_site/docs/data
 ```
 
 Needs `ffmpeg` (wav -> 128kbps mp3) and reads from
@@ -53,7 +54,7 @@ re-run; the recording ID must have an entry in
 ## Running locally
 
 ```bash
-python3 -m http.server 8910
+cd docs && python3 -m http.server 8910
 ```
 
 then open `http://localhost:8910/`. `fetch()` of `data/*.json` needs an actual HTTP
@@ -61,6 +62,6 @@ server — opening `index.html` directly via `file://` will fail on CORS in most
 
 ## Deploying
 
-This directory is its own git repo. Push it to a GitHub repo and enable Pages (root of
-`main`, or a `gh-pages` branch) — nothing here assumes a particular repo name or path
-prefix; all asset references are relative.
+GitHub Pages is configured to deploy from `master`, path `/docs` (Settings → Pages).
+All asset references in this directory are relative, so it keeps working regardless of
+repo name.

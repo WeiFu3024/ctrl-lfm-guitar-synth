@@ -12,7 +12,8 @@ pipeline_tag: audio-to-audio
 
 # guitar-synth checkpoints
 
-Pretrained weights for [ctrl-lfm-guitar-synth-code](https://github.com/WeiFu3024/ctrl-lfm-guitar-synth-code):
+Pretrained weights for [ctrl-lfm-guitar-synth](https://github.com/WeiFu3024/ctrl-lfm-guitar-synth)
+(code + [listening demo](https://weifu3024.github.io/ctrl-lfm-guitar-synth/)):
 score (GuitarPro / MusicXML / MIDI) -> expressive performance curves -> audio,
 for solo acoustic/electric guitar. Three frozen models chained together, plus
 one optional post-process and one baseline/ablation.

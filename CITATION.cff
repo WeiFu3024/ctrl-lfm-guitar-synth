@@ -2,10 +2,10 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below. A paper citation will
   be added here once the arXiv preprint is available."
 type: software
-title: "ctrl-lfm-guitar-synth-code: Expressive Guitar Synthesis via Controllable Latent Flow Matching"
+title: "ctrl-lfm-guitar-synth: Expressive Guitar Synthesis via Controllable Latent Flow Matching"
 authors:
   - family-names: Fu
     given-names: Hsueh-Wei
     affiliation: National Taiwan University
-repository-code: "https://github.com/WeiFu3024/ctrl-lfm-guitar-synth-code"
+repository-code: "https://github.com/WeiFu3024/ctrl-lfm-guitar-synth"
 license: MIT
