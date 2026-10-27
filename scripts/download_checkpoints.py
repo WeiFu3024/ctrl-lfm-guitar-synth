@@ -2,7 +2,7 @@
 # model repo into checkpoints/, matching the layout every training script and
 # inference/pipeline.py already expects.
 #
-# Run as: python -m scripts.download_checkpoints --repo-id <org>/guitar-synth
+# Run as: python -m scripts.download_checkpoints --repo-id Will3024/ctrl-lfm-guitar-synth
 import argparse
 from pathlib import Path
 
@@ -19,7 +19,7 @@ FILES = [
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--repo-id", required=True, help="Hugging Face model repo id, e.g. <org>/guitar-synth")
+    ap.add_argument("--repo-id", required=True, help="Hugging Face model repo id, e.g. Will3024/ctrl-lfm-guitar-synth")
     ap.add_argument("--revision", default=None)
     ap.add_argument("--skip-baseline", action="store_true",
                      help="skip joint_synth_velocity_peak.pt (the single-stage baseline, "

@@ -1,26 +1,20 @@
 # guitar-synth
 
 Score -> expressive performance curves -> audio, for solo acoustic/electric guitar.
-Three frozen models chained together:
 
-```
-score (GuitarPro / MusicXML / MIDI)
-   |
-   v
-1. note-gain predictor   score-only note features -> per-note loudness ("velocity")
-   |
-   v
-2. envelope regressor    score + predicted loudness -> per-frame pitch/envelope curves
-   |
-   v
-3. joint six-string synth   curves -> six-string audio latents (rectified-flow sampling)
-   |
-   v
-frozen SAO3 decode -> per-string + mixed audio
-   |
-   v
-(optional) learned six-string mix reverb -> mic-domain mix
-```
+[Demo](https://weifu3024.github.io/ctrl-lfm-guitar-synth/) &middot; [Checkpoints (Hugging Face)](https://huggingface.co/Will3024/ctrl-lfm-guitar-synth)
+
+![Two-stage architecture: a performance-control predictor (left) turns per-string score curves into predicted pitch/envelope curves via an axial transformer encoder, and a latent flow-matching decoder (right) renders those curves into six-string audio through an axial DiT, an ODE solver, and a neural audio codec decoder.](docs/architecture.png)
+
+Three frozen models chained together (the diagram's "performance-control predictor"
+box is the first two stages below; "flow-matching decoder" is the third):
+
+1. **note-gain predictor** -- score-only note features -> per-note loudness ("velocity")
+2. **envelope regressor** -- score + predicted loudness -> per-frame pitch/envelope curves
+3. **joint six-string synth** -- curves -> six-string audio latents (rectified-flow sampling)
+
+...then a frozen SAO3 decode turns the latents into per-string + mixed audio, with an
+optional learned six-string mix reverb folding that into a mic-domain mix.
 
 Trained on [GuitarSet](https://zenodo.org/records/3371780) (CC BY 4.0), conditioned
 through [`stabilityai/stable-audio-open-1.0`](https://huggingface.co/stabilityai/stable-audio-open-1.0)'s
@@ -39,7 +33,7 @@ export HF_TOKEN="$(cat ~/.cache/huggingface/token)"   # needed by any command th
 ## Quickstart: inference only (no training)
 
 ```bash
-python -m scripts.download_checkpoints --repo-id <org>/guitar-synth
+python -m scripts.download_checkpoints --repo-id Will3024/ctrl-lfm-guitar-synth
 CUDA_VISIBLE_DEVICES=0 python -m inference.infer --gp examples/008_PSswc.xml --out runs/demo
 ```
 
