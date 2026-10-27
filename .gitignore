@@ -1,7 +1,7 @@
 checkpoints/
 cache/
 runs/
-data/
+/data/
 __pycache__/
 *.pyc
 *.egg-info/
