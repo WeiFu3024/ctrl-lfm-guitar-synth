@@ -37,6 +37,22 @@ main {
   margin: 0 0 14px;
 }
 
+.page-header .links {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+}
+
+.page-header .links a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.page-header .links a:hover {
+  color: var(--accent-dim);
+  text-decoration: underline;
+}
+
 .architecture-figure {
   display: block;
   width: 100%;
