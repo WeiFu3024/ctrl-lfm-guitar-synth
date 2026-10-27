@@ -71,9 +71,9 @@ Stability's Acceptable Use Policy in addition to this repository's own terms.
 
 ```bibtex
 @software{fu_ctrl_lfm_guitar_synth,
-  title        = {ctrl-lfm-guitar-synth-code: Expressive Guitar Synthesis via Controllable Latent Flow Matching},
+  title        = {ctrl-lfm-guitar-synth: Expressive Guitar Synthesis via Controllable Latent Flow Matching},
   author       = {Fu, Hsueh-Wei},
   affiliation  = {National Taiwan University},
-  url          = {https://github.com/WeiFu3024/ctrl-lfm-guitar-synth-code}
+  url          = {https://github.com/WeiFu3024/ctrl-lfm-guitar-synth}
 }
 ```
